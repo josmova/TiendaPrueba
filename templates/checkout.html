@@ -1,0 +1,169 @@
+{% extends "base.html" %}
+{% load crispy_forms_tags %}
+
+{% block content %}
+
+  <main >
+    <div class="container wow fadeIn">
+      <h2 class="my-5 h2 text-center">Formulario de pago</h2>
+      <div class="row">
+        <div class="col-md-8 mb-4">
+          <div class="card">
+            <form method="POST" class="card-body">
+              {% csrf_token %}
+      
+              <h3>Dirección de Envío</h3>
+
+              <div class='hideable_shipping_form'>
+
+                <div class="md-form mb-5">
+                  <input type='text' placeholder='Republica de Venezuela' id='shipping_address' name='shipping_address' class='form-control' />
+                  <label for="shipping_address" class="">Dirección</label>
+                </div>
+
+                <div class="md-form mb-5">
+                  <input type='text' placeholder='Republica de Haíti' id='shipping_address2' name='shipping_address2' class='form-control' />
+                  <label for="shipping_address2" class="">Dirección 2 (optional)</label>
+                </div>
+
+                <div class="row">
+                  <div class="col-lg-4 col-md-12 mb-4">
+                    <label for="country">País</label>
+                    {{ form.shipping_country }}
+                    <div class="invalid-feedback">
+                     Por favor, seleccione un país válido.
+                    </div>
+                  </div>
+                  <div class="col-lg-4 col-md-6 mb-4">
+                    <label for="shipping_zip">Código Postal</label>
+                    <input type='text' placeholder='Código Postal' id='shipping_zip' name='shipping_zip' class='form-control' />
+                    <div class="invalid-feedback">
+                      Código postal requerido.
+                    </div>
+                  </div>
+                </div>
+
+                <div class="custom-control custom-checkbox">
+                  <input type="checkbox" class="custom-control-input" name="same_billing_address" id="same_billing_address">
+                  <label class="custom-control-label" for="same_billing_address">La dirección de facturación es la misma que la dirección de envío</label>
+                </div>
+                <div class="custom-control custom-checkbox">
+                  <input type="checkbox" class="custom-control-input" name="set_default_shipping" id="set_default_shipping">
+                  <label class="custom-control-label" for="set_default_shipping">Guardar como dirección de envío predeterminada</label>
+                </div>
+
+              </div>
+
+              {% if default_shipping_address %}
+              <div class="custom-control custom-checkbox">
+                <input type="checkbox" class="custom-control-input" name="use_default_shipping" id="use_default_shipping">
+                <label class="custom-control-label" for="use_default_shipping">Utilice la dirección de envío predeterminada: {{ default_shipping_address.street_address|truncatechars:10 }}</label>
+              </div>
+              {% endif %}
+
+              <hr>
+
+              <h3>Dirección de Envio</h3>
+
+              <div class='hideable_billing_form'>
+                <div class="md-form mb-5">
+                  <input type='text' placeholder='República de Venezuela' id='billing_address' name='billing_address' class='form-control' />
+                  <label for="billing_address" class="">Dirección</label>
+                </div>
+
+                <div class="md-form mb-5">
+                  <input type='text' placeholder='Segunda dirección' id='billing_address2' name='billing_address2' class='form-control' />
+                  <label for="billing_address2" class="">Dirección 2 (opcional)</label>
+                </div>
+
+                <div class="row">
+                  <div class="col-lg-4 col-md-12 mb-4">
+                    <label for="country">País</label>
+                    {{ form.billing_country }}
+                    <div class="invalid-feedback">
+                      Por favor, seleccione un país válido.
+                    </div>
+                  </div>
+
+                  <div class="col-lg-4 col-md-6 mb-4">
+                    <label for="billing_zip">Código Postal</label>
+                    <input type='text' placeholder='Código Postal' id='billing_zip' name='billing_zip' class='form-control' />
+                    <div class="invalid-feedback">
+                      Se requiere Código Postal
+                    </div>
+                  </div>
+
+                </div>
+
+                <div class="custom-control custom-checkbox">
+                  <input type="checkbox" class="custom-control-input" name="set_default_billing" id="set_default_billing">
+                  <label class="custom-control-label" for="set_default_billing">Guardar como dirección de facturación predeterminada</label>
+                </div>
+
+              </div>
+
+              {% if default_billing_address %}
+              <div class="custom-control custom-checkbox">
+                <input type="checkbox" class="custom-control-input" name="use_default_billing" id="use_default_billing">
+                <label class="custom-control-label" for="use_default_billing">Utilice la dirección de facturación predeterminada: {{ default_billing_address.street_address|truncatechars:10 }}</label>
+              </div>
+              {% endif %}
+              <hr>
+
+              <h3>Opcion de pago</h3>
+
+              <div class="d-block my-3">
+                {% for value, name in form.fields.payment_option.choices %}
+                <div class="custom-control custom-radio">
+                  <input id="{{ name }}" name="payment_option" value="{{ value }}" type="radio" class="custom-control-input" required>
+                  <label class="custom-control-label" for="{{ name }}">{{ name }}</label>
+                </div>
+                {% endfor %}
+              </div>
+
+              <hr class="mb-4">
+              <button class="btn btn-primary btn-lg btn-block" type="submit">Continuar el pago</button>
+
+            </form>
+
+          </div>
+
+        </div>
+
+        <div class="col-md-4 mb-4">
+          {% include "order_snippet.html" %}
+        </div>
+
+      </div>
+
+    </div>
+  </main>
+
+{% endblock content %}
+
+{% block extra_scripts %}
+<script>
+var hideable_shipping_form = $('.hideable_shipping_form');
+var hideable_billing_form = $('.hideable_billing_form');
+
+var use_default_shipping = document.querySelector("input[name=use_default_shipping]");
+var use_default_billing = document.querySelector("input[name=use_default_billing]");
+
+use_default_shipping.addEventListener('change', function() {
+  if (this.checked) {
+    hideable_shipping_form.hide();
+  } else {
+    hideable_shipping_form.show();
+  }
+})
+
+use_default_billing.addEventListener('change', function() {
+  if (this.checked) {
+    hideable_billing_form.hide();
+  } else {
+    hideable_billing_form.show();
+  }
+})
+
+</script>
+{% endblock extra_scripts %}
